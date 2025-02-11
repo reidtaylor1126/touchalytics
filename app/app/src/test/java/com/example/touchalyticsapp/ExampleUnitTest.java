@@ -1,4 +1,4 @@
-package com.example.podcasttouchalytics;
+package com.example.touchalyticsapp;
 
 import org.junit.Test;
 

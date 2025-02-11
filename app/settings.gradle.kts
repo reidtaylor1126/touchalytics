@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PodcastTouchalytics"
+rootProject.name = "TouchalyticsApp"
 include(":app")
  
