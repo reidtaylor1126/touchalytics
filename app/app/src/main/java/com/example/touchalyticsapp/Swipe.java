@@ -4,6 +4,7 @@ import android.view.MotionEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class Swipe {
     int userId;
@@ -25,19 +26,19 @@ public class Swipe {
     }
 
     public float getStartX() {
-        return this.points.get(0).x;
+        return points.get(0).x;
     }
     public float getStartY() {
-        return this.points.get(0).y;
+        return points.get(0).y;
     }
     public float getEndX() {
-        return this.points.get(this.points.size()-1).x;
+        return points.get(points.size()-1).x;
     }
     public float getEndY() {
-        return this.points.get(this.points.size()-1).y;
+        return points.get(points.size()-1).y;
     }
     public long getDuration() {
-        return this.points.get(this.points.size()-1).timestamp - this.points.get(0).timestamp;
+        return points.get(points.size()-1).timestamp - points.get(0).timestamp;
     }
 
     protected SwipePoint getMidpoint() {

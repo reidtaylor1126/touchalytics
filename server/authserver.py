@@ -35,4 +35,4 @@ def check_login():
     json = request.json
     userhash = hash(json["username"])
 
-    db.reference('/Users/').
+    db.reference('/Users/')

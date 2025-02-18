@@ -15,6 +15,20 @@ public class SwipePoint {
         this.timestamp = timestamp;
     }
 
+    static SwipePoint difference(SwipePoint first, SwipePoint second) {
+        return new SwipePoint(
+                second.x - first.x,
+                second.y - first.y,
+                second.pressure - first.pressure,
+                second.size - first.size,
+                second.timestamp - first.timestamp
+        );
+    }
+
+    public float magnitude() {
+        return (float)Math.sqrt(x*x+y*y);
+    }
+
     @Override
     public String toString() {
         return String.format("TouchPoint{(%.2f, %.2f) at %ld}", this.x, this.y, this.timestamp);

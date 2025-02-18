@@ -28,6 +28,8 @@ public class NewsActivity extends AppCompatActivity {
     private DatabaseReference database;
     private int userId;
 
+    private final int minSwipeEvents = 5;
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +119,8 @@ public class NewsActivity extends AppCompatActivity {
 
     private void endSwipe(MotionEvent e) {
         updateSwipe(e);
-        sendSwipe(this.currentSwipe);
+        if(this.currentSwipe.points.size() >= minSwipeEvents)
+            sendSwipe(this.currentSwipe);
         this.currentSwipe = null;
     }
 
@@ -126,10 +129,6 @@ public class NewsActivity extends AppCompatActivity {
         DatabaseReference newSwipeRef = swipesRef.push();
 
         newSwipeRef.child("UserID").setValue(s.userId);
-        newSwipeRef.child("StartX").setValue(s.getStartX());
-        newSwipeRef.child("StartY").setValue(s.getStartY());
-        newSwipeRef.child("EndX").setValue(s.getEndX());
-        newSwipeRef.child("EndY").setValue(s.getEndY());
-        newSwipeRef.child("Duration").setValue(s.getDuration());
+        new SwipeReport(s).send(newSwipeRef);
     }
 }

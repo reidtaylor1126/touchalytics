@@ -3,6 +3,7 @@ package com.example.touchalyticsapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.activity.EdgeToEdge;
@@ -30,7 +31,7 @@ public class LoginActivity extends AppCompatActivity {
         String username = ((EditText)findViewById(R.id.inputUsername)).getText().toString().trim();
 
         // temp
-        int USERID = 1;
+        int USERID = username.hashCode();
 
         Intent intent = new Intent(LoginActivity.this, NewsActivity.class);
         intent.putExtra("USERID", USERID);
@@ -46,6 +47,11 @@ public class LoginActivity extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+
+        Button loginButton = findViewById(R.id.buttonLogin);
+        loginButton.setOnClickListener(e -> {
+            attemptLogin();
         });
 
 //        FirebaseApp.initializeApp(this);
