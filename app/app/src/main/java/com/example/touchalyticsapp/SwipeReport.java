@@ -4,6 +4,16 @@ import android.annotation.SuppressLint;
 
 import com.google.firebase.database.DatabaseReference;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 public class SwipeReport {
@@ -70,5 +80,72 @@ public class SwipeReport {
             swipeRef.child(String.format("Q%dVelocity",i+1)).setValue(quartileVelocities[i]);
             swipeRef.child(String.format("Q%dPressure",i+1)).setValue(quartilePressures[i]);
         }
+    }
+
+    public boolean auth(String apiTarget) {
+        String json = "{" +
+                "StartX: " + startX +
+                ", StartY: " + startY +
+                ", endX: " + endX +
+                " ,endY: " + endY +
+                ", Length: " + length +
+                ", BoundsArea: " + boundsArea +
+                ", MidpointPressure: " + midPressure +
+                ", Duration: " + duration +
+                ", Q1Velocity: " + quartileVelocities[0] +
+                ", Q2Velocity: " + quartileVelocities[1] +
+                ", Q3Velocity: " + quartileVelocities[2] +
+                ", Q4Velocity: " + quartileVelocities[3] +
+                ", Q1Pressure: " + quartilePressures[0] +
+                ", Q2Pressure: " + quartilePressures[1] +
+                ", Q3Pressure: " + quartilePressures[2] +
+                ", Q4Pressure: " + quartilePressures[3]
+                ;
+
+        System.out.println(json);
+
+        HttpURLConnection conn = null;
+        try {
+            URL apiURL = new URL(apiTarget);
+            conn = (HttpURLConnection) apiURL.openConnection();
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+        } catch (MalformedURLException e) {
+            System.out.println("Malformed URL");
+        } catch(IOException e) {
+            System.out.println("Error during connection setup");
+        }
+        if(conn != null) {
+            try {
+                OutputStream output = conn.getOutputStream();
+                OutputStreamWriter writer = new OutputStreamWriter(output, "UTF-8");
+                writer.write(json);
+                writer.flush();
+                writer.close();
+                output.close();
+                conn.connect();
+                System.out.println(conn.getResponseCode());
+            } catch (IOException e) {
+                System.out.println("Error while sending payload");
+                System.out.println(e.getMessage());
+            }
+            try {
+                InputStream input = conn.getInputStream();
+                InputStreamReader reader = new InputStreamReader(input);
+                BufferedReader bReader = new BufferedReader(reader);
+                String response = bReader.readLine();
+                System.out.println(response);
+                bReader.close();
+                reader.close();
+                input.close();
+            } catch (IOException e) {
+                System.out.println("Error while reading response");
+                System.out.println(e.getMessage());
+            }
+        }
+
+        return true;
     }
 }

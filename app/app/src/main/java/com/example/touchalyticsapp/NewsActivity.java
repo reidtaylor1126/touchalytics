@@ -27,6 +27,7 @@ public class NewsActivity extends AppCompatActivity {
     private Swipe currentSwipe;
     private DatabaseReference database;
     private int userId;
+    private boolean doAuthentication;
 
     private final int minSwipeEvents = 5;
 
@@ -47,6 +48,7 @@ public class NewsActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         userId = intent.getIntExtra("USERID", -1);
+        doAuthentication = intent.getBooleanExtra("USERPROFILED", false);
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.news_view);
@@ -58,29 +60,6 @@ public class NewsActivity extends AppCompatActivity {
             handleTouchEvent(event);
             return false;
         });
-
-//        getCountofSwipes(userID, count -> {
-//            this.count = count;
-//            Log.i("Count", String.valueOf(count));
-//        });
-//
-//        Log.i("Count", String.valueOf(count));
-
-
-//        Button homeButton = findViewById(R.id.Home);
-//        homeButton.setOnClickListener(v -> {
-//            Intent homeIntent = new Intent(NewsActivity.this, MainActivity.class);
-//            homeIntent.putExtra("IsLoggedin", true);
-//            startActivity(homeIntent);
-//            finish();
-//        });
-//
-//        Button backbutton = findViewById(R.id.previous);
-//        backbutton.setOnClickListener(v -> newsView.goBack());
-//
-//        Button nextbutton = findViewById(R.id.next);
-//        nextbutton.setOnClickListener(v -> newsView.goForward());
-
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -119,9 +98,22 @@ public class NewsActivity extends AppCompatActivity {
 
     private void endSwipe(MotionEvent e) {
         updateSwipe(e);
-        if(this.currentSwipe.points.size() >= minSwipeEvents)
-            sendSwipe(this.currentSwipe);
+        if(this.currentSwipe.points.size() >= minSwipeEvents) {
+            if(doAuthentication)
+                authSwipe(this.currentSwipe);
+            else
+                sendSwipe(this.currentSwipe);
+        }
         this.currentSwipe = null;
+    }
+
+    private void authSwipe(Swipe s) {
+        boolean keepAuth = new SwipeReport(s).auth("http://127.0.0.1:5001/auth");
+        if(!keepAuth) {
+            Intent intent = new Intent(NewsActivity.this, LoginActivity.class);
+            intent.putExtra("UNAUTHORIZED", true);
+            startActivity(intent);
+        }
     }
 
     private void sendSwipe(Swipe s) {
