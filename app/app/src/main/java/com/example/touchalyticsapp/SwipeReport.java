@@ -16,6 +16,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class SwipeReport {
     float startX;
     float startY;
@@ -104,47 +109,54 @@ public class SwipeReport {
 
         System.out.println(json);
 
-        HttpURLConnection conn = null;
-        try {
-            URL apiURL = new URL(apiTarget);
-            conn = (HttpURLConnection) apiURL.openConnection();
-            conn.setDoOutput(true);
-            conn.setDoInput(true);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-        } catch (MalformedURLException e) {
-            System.out.println("Malformed URL");
-        } catch(IOException e) {
-            System.out.println("Error during connection setup");
-        }
-        if(conn != null) {
-            try {
-                OutputStream output = conn.getOutputStream();
-                OutputStreamWriter writer = new OutputStreamWriter(output, "UTF-8");
-                writer.write(json);
-                writer.flush();
-                writer.close();
-                output.close();
-                conn.connect();
-                System.out.println(conn.getResponseCode());
-            } catch (IOException e) {
-                System.out.println("Error while sending payload");
-                System.out.println(e.getMessage());
-            }
-            try {
-                InputStream input = conn.getInputStream();
-                InputStreamReader reader = new InputStreamReader(input);
-                BufferedReader bReader = new BufferedReader(reader);
-                String response = bReader.readLine();
-                System.out.println(response);
-                bReader.close();
-                reader.close();
-                input.close();
-            } catch (IOException e) {
-                System.out.println("Error while reading response");
-                System.out.println(e.getMessage());
-            }
-        }
+        Retrofit sender = new Retrofit.Builder()
+                .baseUrl(apiTarget)
+//                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        SwipeSender swipeSender = sender.create(SwipeSender.class);
+        Call<ResponseBody> response = swipeSender.sendSwipe(json);
+
+//        HttpURLConnection conn = null;
+//        try {
+//            URL apiURL = new URL(apiTarget);
+//            conn = (HttpURLConnection) apiURL.openConnection();
+//            conn.setDoOutput(true);
+//            conn.setDoInput(true);
+//            conn.setRequestMethod("POST");
+//            conn.setRequestProperty("Content-Type", "application/json");
+//        } catch (MalformedURLException e) {
+//            System.out.println("Malformed URL");
+//        } catch(IOException e) {
+//            System.out.println("Error during connection setup");
+//        }
+//        if(conn != null) {
+//            try {
+//                OutputStream output = conn.getOutputStream();
+//                OutputStreamWriter writer = new OutputStreamWriter(output, "UTF-8");
+//                writer.write(json);
+//                writer.flush();
+//                writer.close();
+//                output.close();
+//                conn.connect();
+//                System.out.println(conn.getResponseCode());
+//            } catch (IOException e) {
+//                System.out.println("Error while sending payload");
+//                System.out.println(e.getMessage());
+//            }
+//            try {
+//                InputStream input = conn.getInputStream();
+//                InputStreamReader reader = new InputStreamReader(input);
+//                BufferedReader bReader = new BufferedReader(reader);
+//                String response = bReader.readLine();
+//                System.out.println(response);
+//                bReader.close();
+//                reader.close();
+//                input.close();
+//            } catch (IOException e) {
+//                System.out.println("Error while reading response");
+//                System.out.println(e.getMessage());
+//            }
+//        }
 
         return true;
     }

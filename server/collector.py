@@ -105,8 +105,8 @@ def auth():
     return {"keepAuth": True, "status": 200}
 
 def main():
-    # collect_swipes()
-    train()
+    collect_swipes(False)
+    # train()
     db.reference("/Swipes/").listen(collect_swipes)
     app.run(port=5001)
     

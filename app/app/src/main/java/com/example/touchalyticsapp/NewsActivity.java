@@ -2,6 +2,7 @@ package com.example.touchalyticsapp;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +29,7 @@ public class NewsActivity extends AppCompatActivity {
     private DatabaseReference database;
     private int userId;
     private boolean doAuthentication;
+    boolean keepAuth;
 
     private final int minSwipeEvents = 5;
 
@@ -108,12 +110,16 @@ public class NewsActivity extends AppCompatActivity {
     }
 
     private void authSwipe(Swipe s) {
-        boolean keepAuth = new SwipeReport(s).auth("http://127.0.0.1:5001/auth");
-        if(!keepAuth) {
-            Intent intent = new Intent(NewsActivity.this, LoginActivity.class);
-            intent.putExtra("UNAUTHORIZED", true);
-            startActivity(intent);
-        }
+        AsyncTask.execute(() -> {
+            keepAuth = new SwipeReport(s).auth("http://172.20.112.1:5001/auth");
+            runOnUiThread(() -> {
+                if(!keepAuth) {
+                    Intent intent = new Intent(NewsActivity.this, LoginActivity.class);
+                    intent.putExtra("UNAUTHORIZED", true);
+                    startActivity(intent);
+                }
+            });
+        });
     }
 
     private void sendSwipe(Swipe s) {
