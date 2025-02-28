@@ -14,8 +14,9 @@ LEARN_THRESHOLD = 50
 SWIPE_COLUMNS = [
     "StartX", "StartY", "EndX", "EndY", 
     "Length", "Duration", "BoundsArea", "MidpointPressure",
-    "Q1Velocity", "Q2Velocity", "Q3Velocity", "Q4Velocity", 
-    "Q1Pressure", "Q2Pressure", "Q3Pressure", "Q4Pressure"
+    "Q1Velocity", "Q1Pressure", "Q2Velocity", "Q2Pressure", 
+    "Q3Velocity", "Q3Pressure", "Q4Velocity", "Q4Pressure"
+    
 ]
 
 model = None
@@ -77,31 +78,31 @@ def train(X, y):
 
 app = Flask(__name__)
 
-@app.route('/auth', methods=['POST'])
+@app.route('/auth/', methods=['POST'])
 def auth():
     body = request.get_json()
     print(body)
-    features = arrange_features(body)
-    pred = model.predict(np.array([features]))
+    # features = arrange_features(body)
+    # pred = model.predict(np.array([features]))
 
-    foundUser = db.reference("/Users/").order_by_child("userID").equal_to(body["UserID"]).get()
-    user_record_id = list(foundUser.keys())[0]
+    # foundUser = db.reference("/Users/").order_by_child("userID").equal_to(body["UserID"]).get()
+    # user_record_id = list(foundUser.keys())[0]
 
-    invalid_swipes = foundUser[user_record_id]["invalidCounts"]
+    # invalid_swipes = foundUser[user_record_id]["invalidCounts"]
 
-    if pred != body["UserID"]:
-        invalid_swipes += 1
+    # if pred != body["UserID"]:
+    #     invalid_swipes += 1
 
-        if invalid_swipes >= MAX_INVALID_SWIPES:
-            db.reference(f"/Users/{user_record_id}").update({"invalidCounts": 0})
-            return {"keepAuth": False, "status": 200}
-        print(f"{foundUser[user_record_id]['username']} performed an unrecognized swipe")
+    #     if invalid_swipes >= MAX_INVALID_SWIPES:
+    #         db.reference(f"/Users/{user_record_id}").update({"invalidCounts": 0})
+    #         return {"keepAuth": False, "status": 200}
+    #     print(f"{foundUser[user_record_id]['username']} performed an unrecognized swipe")
     
-    else:
-        invalid_swipes -= 1
-        invalid_swipes = max(0, invalid_swipes)
+    # else:
+    #     invalid_swipes -= 1
+    #     invalid_swipes = max(0, invalid_swipes)
 
-    db.reference(f"/Users/{user_record_id}").update({"invalidCounts": invalid_swipes})
+    # db.reference(f"/Users/{user_record_id}").update({"invalidCounts": invalid_swipes})
     return {"keepAuth": True, "status": 200}
 
 def main():

@@ -1,8 +1,11 @@
 package com.example.touchalyticsapp;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 
 import com.google.firebase.database.DatabaseReference;
+
+import org.json.JSONArray;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -18,6 +21,8 @@ import java.util.ArrayList;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -32,6 +37,7 @@ public class SwipeReport {
     long duration;
     float[] quartileVelocities = new float[4];
     float[] quartilePressures = new float[4];
+    int userID;
 
     public SwipeReport(Swipe swipe) {
         startX = swipe.getStartX();
@@ -41,6 +47,7 @@ public class SwipeReport {
         boundsArea = Math.sqrt((endX-startX)*(endX-startX) + (endY-startY)*(endY-startY));
         midPressure = swipe.getMidpoint().pressure;
         duration = swipe.getDuration();
+        userID = swipe.userId;
         int[] quartiles = new int[4];
         quartiles[0] = swipe.points.size()/4;
         quartiles[1] = swipe.points.size()/2;
@@ -87,35 +94,69 @@ public class SwipeReport {
         }
     }
 
-    public boolean auth(String apiTarget) {
-        String json = "{" +
-                "StartX: " + startX +
-                ", StartY: " + startY +
-                ", endX: " + endX +
-                " ,endY: " + endY +
-                ", Length: " + length +
-                ", BoundsArea: " + boundsArea +
-                ", MidpointPressure: " + midPressure +
-                ", Duration: " + duration +
-                ", Q1Velocity: " + quartileVelocities[0] +
-                ", Q2Velocity: " + quartileVelocities[1] +
-                ", Q3Velocity: " + quartileVelocities[2] +
-                ", Q4Velocity: " + quartileVelocities[3] +
-                ", Q1Pressure: " + quartilePressures[0] +
-                ", Q2Pressure: " + quartilePressures[1] +
-                ", Q3Pressure: " + quartilePressures[2] +
-                ", Q4Pressure: " + quartilePressures[3]
-                ;
+    public JSONArray asJsonArray() {
+        ArrayList<Float> features = new ArrayList<Float>();
+        features.add(startX);
+        features.add(startY);
+        features.add(endX);
+        features.add(endY);
+        features.add(length);
+        features.add((float) duration);
+        features.add((float) boundsArea);
+        features.add(midPressure);
+        for(int i = 0; i < 4; i++) {
+            features.add(quartileVelocities[i]);
+            features.add(quartilePressures[i]);
+        }
+        features.add((float) userID);
+        return new JSONArray(features);
+    }
 
-        System.out.println(json);
+    public boolean auth(String apiTarget) {
+//        String json = "{" +
+//                "StartX: " + startX +
+//                ", StartY: " + startY +
+//                ", endX: " + endX +
+//                " ,endY: " + endY +
+//                ", Length: " + length +
+//                ", BoundsArea: " + boundsArea +
+//                ", MidpointPressure: " + midPressure +
+//                ", Duration: " + duration +
+//                ", Q1Velocity: " + quartileVelocities[0] +
+//                ", Q2Velocity: " + quartileVelocities[1] +
+//                ", Q3Velocity: " + quartileVelocities[2] +
+//                ", Q4Velocity: " + quartileVelocities[3] +
+//                ", Q1Pressure: " + quartilePressures[0] +
+//                ", Q2Pressure: " + quartilePressures[1] +
+//                ", Q3Pressure: " + quartilePressures[2] +
+//                ", Q4Pressure: " + quartilePressures[3]
+//                ;
+//
+//        System.out.println(json);
 
         Retrofit sender = new Retrofit.Builder()
                 .baseUrl(apiTarget)
-//                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
         SwipeSender swipeSender = sender.create(SwipeSender.class);
-        Call<ResponseBody> response = swipeSender.sendSwipe(json);
+        Call<ResponseBody> response = swipeSender.sendSwipe(asJsonArray());
 
+        response.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if(response.isSuccessful()) {
+                    Log.i("Features", response.body().toString());
+                } else {
+                    assert response.errorBody() != null;
+                    Log.e("Features", response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+                Log.e("Features", throwable.getMessage());
+            }
+        });
 //        HttpURLConnection conn = null;
 //        try {
 //            URL apiURL = new URL(apiTarget);

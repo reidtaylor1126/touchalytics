@@ -110,16 +110,12 @@ public class NewsActivity extends AppCompatActivity {
     }
 
     private void authSwipe(Swipe s) {
-        AsyncTask.execute(() -> {
-            keepAuth = new SwipeReport(s).auth("http://172.20.112.1:5001/auth");
-            runOnUiThread(() -> {
-                if(!keepAuth) {
-                    Intent intent = new Intent(NewsActivity.this, LoginActivity.class);
-                    intent.putExtra("UNAUTHORIZED", true);
-                    startActivity(intent);
-                }
-            });
-        });
+        keepAuth = new SwipeReport(s).auth("http://172.20.112.1:5001/");
+        if(!keepAuth) {
+            Intent intent = new Intent(NewsActivity.this, LoginActivity.class);
+            intent.putExtra("UNAUTHORIZED", true);
+            startActivity(intent);
+        }
     }
 
     private void sendSwipe(Swipe s) {
